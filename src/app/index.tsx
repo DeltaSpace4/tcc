@@ -1,98 +1,60 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { auth } from "../../FirebaseConfig";
+import { globalStyles } from "../styles/global";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function Login() {
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+    const signIn = async () => {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if(userCredential.user) { router.push("/home"); }
+      } catch (error) {
+        console.error("Error signing in user:", error);
+        if(email === "" || password === "") {
+          alert("Preencha todos os campos antes de entrar.");
+        }else{
+          alert("Email ou senha incorretos, tente novamente.");
+        }
+      }
+    };  
+  
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
+    <View style={globalStyles.container}>
+      <Text style={globalStyles.title}>Welcome to the Login Screen</Text>
+      <TextInput style={globalStyles.textInput}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        placeholderTextColor={globalStyles.placeholderText.color}
+      />
+      <TextInput style={globalStyles.textInput}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        placeholderTextColor={globalStyles.placeholderText.color}
+      />
+      <TouchableOpacity onPress={signIn} style={globalStyles.button}>
+        <Text style={globalStyles.buttonText}>Entrar</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.Cadastro} onPress={() => router.push("/cadastro")}>
+        <Text style={globalStyles.buttonText}>Cadastrar</Text>
+      </TouchableOpacity>
+    </View>
   );
-}
-
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
-  );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
+  Cadastro: {
+    marginTop: 20,
     textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+    color: '#ffffff',
+  }
 });
